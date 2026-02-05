@@ -47,24 +47,33 @@ public class DistribuidorServiceImpl implements DistribuidorService {
             return;
         }
 
-        log.info("Iniciando distribuição do atendimento ID {} para time {}",
-                atendimento.getId(), atendimento.getTime());
+        log.info("═══════════════════════════════════════");
+        log.info("🎯 DISTRIBUINDO ATENDIMENTO");
+        log.info("   ID: {}", atendimento.getId());
+        log.info("   Cliente: {}", atendimento.getNomeCliente());
+        log.info("   Time: {}", atendimento.getTime());
+        log.info("═══════════════════════════════════════");
 
         // Busca atendentes disponíveis do time
         List<Atendente> disponiveis = atendenteService.buscarDisponiveis(atendimento.getTime());
 
         if (disponiveis.isEmpty()) {
             // Nenhum atendente disponível -> enfileira
-            log.info("Nenhum atendente disponível no time {}. Enfileirando atendimento ID {}",
+            log.warn("⚠️  Nenhum atendente disponível no time {}. Enfileirando atendimento ID {}",
                     atendimento.getTime(), atendimento.getId());
 
             atendimento.setStatus(StatusAtendimento.AGUARDANDO_ATENDIMENTO);
             filaService.enfileirar(atendimento);
 
+            log.info("📋 Atendimento ID {} adicionado à fila. Tamanho atual da fila: {}",
+                    atendimento.getId(), filaService.tamanhoFila(atendimento.getTime()));
+
             // Notifica dashboard sobre atualização na fila
             notificacaoService.notificarAtualizacaoFila(atendimento.getTime());
         } else {
             // Atendente disponível -> atribui ao primeiro da lista
+            log.info("✅ {} atendente(s) disponível(is) no time {}",
+                    disponiveis.size(), atendimento.getTime());
             Atendente atendente = disponiveis.get(0);
             atribuirAtendimento(atendimento, atendente);
         }
@@ -72,21 +81,27 @@ public class DistribuidorServiceImpl implements DistribuidorService {
 
     @Override
     public void finalizarAtendimento(Long atendimentoId) {
-        log.info("Finalizando atendimento ID {}", atendimentoId);
+        log.info("═══════════════════════════════════════");
+        log.info("🏁 FINALIZANDO ATENDIMENTO");
+        log.info("   ID: {}", atendimentoId);
 
         Atendimento atendimento = atendimentosAtivos.remove(atendimentoId);
 
         if (atendimento == null) {
-            log.warn("Tentativa de finalizar atendimento inexistente ou já finalizado: ID {}",
+            log.warn("⚠️  Tentativa de finalizar atendimento inexistente ou já finalizado: ID {}",
                     atendimentoId);
+            log.info("═══════════════════════════════════════");
             return;
         }
+
+        log.info("   Cliente: {}", atendimento.getNomeCliente());
+        log.info("   Time: {}", atendimento.getTime());
 
         // Libera o atendente
         atendenteService.buscarPorId(atendimento.getAtendenteId())
                 .ifPresent(atendente -> {
                     atendente.decrementarAtendimentos();
-                    log.info("Atendente {} liberado. Atendimentos ativos: {}/3",
+                    log.info("   Atendente {} liberado. Atendimentos ativos: {}/3",
                             atendente.getNome(), atendente.getAtendimentosAtivos());
                 });
 
@@ -94,7 +109,8 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         atendimento.setStatus(StatusAtendimento.FINALIZADO);
         atendimento.setDataHoraFinalizacao(LocalDateTime.now());
 
-        log.info("Atendimento ID {} finalizado com sucesso", atendimentoId);
+        log.info("✅ Atendimento finalizado com sucesso");
+        log.info("═══════════════════════════════════════");
 
         // Notifica dashboard
         notificacaoService.notificarAtendimentoFinalizado(atendimento);
@@ -105,10 +121,18 @@ public class DistribuidorServiceImpl implements DistribuidorService {
 
     @Override
     public void processarFila(Time time) {
-        log.debug("Processando fila do time {}", time);
+        int tamanhoInicial = filaService.tamanhoFila(time);
+
+        if (tamanhoInicial == 0) {
+            log.debug("Fila do time {} está vazia, nada a processar", time);
+            return;
+        }
+
+        log.info("🔄 Processando fila do time {} (Tamanho: {})", time, tamanhoInicial);
 
         // Enquanto houver atendentes disponíveis E fila não vazia
         List<Atendente> disponiveis = atendenteService.buscarDisponiveis(time);
+        int processados = 0;
 
         while (!disponiveis.isEmpty() && filaService.tamanhoFila(time) > 0) {
             // Remove próximo da fila
@@ -121,17 +145,20 @@ public class DistribuidorServiceImpl implements DistribuidorService {
             // Atribui ao primeiro atendente disponível
             Atendente atendente = disponiveis.get(0);
             atribuirAtendimento(proximoAtendimento, atendente);
+            processados++;
 
             // Atualiza lista de disponíveis
             disponiveis = atendenteService.buscarDisponiveis(time);
         }
 
         int restante = filaService.tamanhoFila(time);
+
+        log.info("📊 Fila do time {}: {} processado(s), {} restante(s)",
+                time, processados, restante);
+
         if (restante > 0) {
-            log.debug("Processamento da fila do time {} concluído. Ainda {} na fila",
-                    time, restante);
-        } else {
-            log.debug("Fila do time {} completamente processada", time);
+            log.warn("⚠️  Ainda há {} atendimento(s) aguardando no time {}",
+                    restante, time);
         }
     }
 
@@ -151,7 +178,7 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         // Armazena em memória como ativo
         atendimentosAtivos.put(atendimento.getId(), atendimento);
 
-        log.info("Atendimento {} atribuído para {} (Time: {}). Carga atual: {}/3",
+        log.info("👤 Atendimento {} atribuído para {} (Time: {}). Carga atual: {}/3",
                 atendimento.getId(),
                 atendente.getNome(),
                 atendente.getTime(),

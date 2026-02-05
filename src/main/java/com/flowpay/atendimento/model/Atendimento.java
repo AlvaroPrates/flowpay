@@ -12,12 +12,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Atendimento {
+
     private Long id;
-    private String nomeCliente;
-    private String assunto;
-    private Time time;
-    private StatusAtendimento status;
     private Long atendenteId;
+    private Time time;
+    private String assunto;
+    private String nomeCliente;
+    private StatusAtendimento status;
     private LocalDateTime dataHoraCriacao;
     private LocalDateTime dataHoraAtendimento;
     private LocalDateTime dataHoraFinalizacao;

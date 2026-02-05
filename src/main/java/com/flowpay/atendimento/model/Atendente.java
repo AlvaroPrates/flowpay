@@ -10,11 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Atendente {
+
     public static final int MAX_ATENDIMENTOS = 3;
 
     private Long id;
-    private String nome;
     private Time time;
+    private String nome;
     private int atendimentosAtivos;
 
     public boolean isDisponivel() {

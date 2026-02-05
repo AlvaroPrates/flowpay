@@ -9,8 +9,8 @@ import com.flowpay.atendimento.service.AtendenteService;
 import com.flowpay.atendimento.service.AtendimentoService;
 import com.flowpay.atendimento.service.FilaService;
 import com.flowpay.atendimento.service.NotificacaoService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,6 @@ import java.util.List;
  * Envia mensagens em tempo real para clientes conectados.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class NotificacaoServiceImpl implements NotificacaoService {
 
@@ -31,6 +30,20 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     private final AtendenteService atendenteService;
     private final AtendimentoService atendimentoService;
     private final FilaService filaService;
+
+    /**
+     * Construtor com @Lazy em AtendimentoService para quebrar dependência circular.
+     */
+    public NotificacaoServiceImpl(
+            SimpMessagingTemplate messagingTemplate,
+            AtendenteService atendenteService,
+            @Lazy AtendimentoService atendimentoService,
+            FilaService filaService) {
+        this.messagingTemplate = messagingTemplate;
+        this.atendenteService = atendenteService;
+        this.atendimentoService = atendimentoService;
+        this.filaService = filaService;
+    }
 
     @Override
     public void notificarNovoAtendimento(Atendimento atendimento) {

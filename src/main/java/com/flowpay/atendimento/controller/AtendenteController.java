@@ -2,10 +2,18 @@ package com.flowpay.atendimento.controller;
 
 import com.flowpay.atendimento.dto.request.CadastrarAtendenteRequest;
 import com.flowpay.atendimento.dto.response.AtendenteResponse;
+import com.flowpay.atendimento.exception.ErrorResponse;
 import com.flowpay.atendimento.exception.RecursoNaoEncontradoException;
 import com.flowpay.atendimento.model.Atendente;
 import com.flowpay.atendimento.model.Time;
 import com.flowpay.atendimento.service.AtendenteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@Tag(name = "Atendentes", description = "Gerenciamento de atendentes")
 public class AtendenteController {
 
     private final AtendenteService atendenteService;
@@ -32,8 +41,28 @@ public class AtendenteController {
      * POST /api/atendentes
      * Cadastra um novo atendente.
      */
+    @Operation(
+        summary = "Cadastrar novo atendente",
+        description = "Cadastra um novo atendente no sistema e o associa a um time específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Atendente cadastrado com sucesso",
+            content = @Content(schema = @Schema(implementation = AtendenteResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+        )
+    })
     @PostMapping
     public ResponseEntity<AtendenteResponse> cadastrar(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Dados do atendente",
+                required = true
+            )
             @Valid @RequestBody CadastrarAtendenteRequest request) {
 
         log.info("Recebida requisição para cadastrar atendente: nome={}, time={}",
@@ -54,6 +83,10 @@ public class AtendenteController {
      * GET /api/atendentes
      * Lista todos os atendentes.
      */
+    @Operation(
+        summary = "Listar todos os atendentes",
+        description = "Retorna uma lista com todos os atendentes cadastrados"
+    )
     @GetMapping
     public ResponseEntity<List<AtendenteResponse>> listarTodos() {
         List<AtendenteResponse> atendentes = atendenteService.listarTodos()
@@ -68,8 +101,25 @@ public class AtendenteController {
      * GET /api/atendentes/{id}
      * Busca um atendente por ID.
      */
+    @Operation(
+        summary = "Buscar atendente por ID",
+        description = "Retorna os detalhes de um atendente específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Atendente encontrado"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Atendente não encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+        )
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<AtendenteResponse> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<AtendenteResponse> buscarPorId(
+            @Parameter(description = "ID do atendente", example = "1")
+            @PathVariable Long id) {
         Atendente atendente = atendenteService.buscarPorId(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Atendente não encontrado: " + id));
@@ -81,8 +131,14 @@ public class AtendenteController {
      * GET /api/atendentes/time/{time}
      * Lista atendentes de um time específico.
      */
+    @Operation(
+        summary = "Listar atendentes por time",
+        description = "Retorna todos os atendentes de um time específico"
+    )
     @GetMapping("/time/{time}")
-    public ResponseEntity<List<AtendenteResponse>> listarPorTime(@PathVariable Time time) {
+    public ResponseEntity<List<AtendenteResponse>> listarPorTime(
+            @Parameter(description = "Time", example = "CARTOES")
+            @PathVariable Time time) {
         List<AtendenteResponse> atendentes = atendenteService.listarPorTime(time)
                 .stream()
                 .map(AtendenteResponse::fromEntity)
@@ -95,8 +151,14 @@ public class AtendenteController {
      * GET /api/atendentes/time/{time}/disponiveis
      * Lista apenas atendentes disponíveis de um time.
      */
+    @Operation(
+        summary = "Listar atendentes disponíveis",
+        description = "Retorna apenas os atendentes disponíveis (com menos de 3 atendimentos ativos) de um time"
+    )
     @GetMapping("/time/{time}/disponiveis")
-    public ResponseEntity<List<AtendenteResponse>> listarDisponiveis(@PathVariable Time time) {
+    public ResponseEntity<List<AtendenteResponse>> listarDisponiveis(
+            @Parameter(description = "Time", example = "CARTOES")
+            @PathVariable Time time) {
         List<AtendenteResponse> disponiveis = atendenteService.buscarDisponiveis(time)
                 .stream()
                 .map(AtendenteResponse::fromEntity)

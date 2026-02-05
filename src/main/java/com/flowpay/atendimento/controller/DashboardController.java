@@ -9,6 +9,9 @@ import com.flowpay.atendimento.model.Time;
 import com.flowpay.atendimento.service.AtendenteService;
 import com.flowpay.atendimento.service.AtendimentoService;
 import com.flowpay.atendimento.service.FilaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
+@Tag(name = "Dashboard", description = "Métricas e dados para visualização no dashboard")
 public class DashboardController {
 
     private final AtendimentoService atendimentoService;
@@ -35,6 +39,11 @@ public class DashboardController {
      * GET /api/dashboard/metricas
      * Retorna métricas gerais do sistema.
      */
+    @Operation(
+        summary = "Obter métricas gerais",
+        description = "Retorna métricas consolidadas do sistema: total de atendimentos ativos, " +
+                     "filas, atendentes disponíveis e estatísticas por time"
+    )
     @GetMapping("/metricas")
     public ResponseEntity<DashboardMetricasResponse> obterMetricas() {
 
@@ -84,8 +93,15 @@ public class DashboardController {
      * GET /api/dashboard/time/{time}
      * Retorna status completo de um time específico.
      */
+    @Operation(
+        summary = "Obter status de um time",
+        description = "Retorna informações detalhadas sobre um time específico: " +
+                     "atendentes, fila de espera e atendimentos ativos"
+    )
     @GetMapping("/time/{time}")
-    public ResponseEntity<TimeStatusResponse> obterStatusTime(@PathVariable Time time) {
+    public ResponseEntity<TimeStatusResponse> obterStatusTime(
+            @Parameter(description = "Time", example = "CARTOES")
+            @PathVariable Time time) {
 
         // Atendentes do time
         List<AtendenteResponse> atendentes = atendenteService.listarPorTime(time)
