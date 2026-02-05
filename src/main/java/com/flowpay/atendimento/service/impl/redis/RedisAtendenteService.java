@@ -12,14 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Implementação Redis do serviço de atendentes.
- *
- * Estrutura Redis:
- * - Key: "atendente:{id}" → Hash com dados do atendente
- * - Key: "atendentes:ids" → Set com todos os IDs
- * - Key: "atendente:id:counter" → Contador de IDs
- */
 @Service
 @Profile("redis")
 @RequiredArgsConstructor
