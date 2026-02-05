@@ -46,23 +46,21 @@ public class RedisAtendenteService implements AtendenteService {
             throw new IllegalArgumentException("Atendente não pode ser null");
         }
 
-        if (atendente.getId() == null) {
+        var atendenteId = atendente.getId();
+
+        if (atendenteId == null || atendenteId == 0) {
             atendente.setId(gerarProximoId());
         }
 
-        if (atendente.getAtendimentosAtivos() == 0) {
-            atendente.setAtendimentosAtivos(0);
-        }
+        atendente.setAtendimentosAtivos(0);
 
         String key = getAtendenteKey(atendente.getId());
 
-        // Salva como hash no Redis
         redisTemplate.opsForHash().put(key, "id", atendente.getId());
         redisTemplate.opsForHash().put(key, "nome", atendente.getNome());
         redisTemplate.opsForHash().put(key, "time", atendente.getTime().name());
         redisTemplate.opsForHash().put(key, "atendimentosAtivos", atendente.getAtendimentosAtivos());
 
-        // Adiciona ID ao set
         redisTemplate.opsForSet().add(ATENDENTES_IDS_KEY, atendente.getId());
 
         log.info("Atendente cadastrado no Redis: ID={}, Nome={}, Time={}",
@@ -72,7 +70,7 @@ public class RedisAtendenteService implements AtendenteService {
     }
 
     @Override
-    public List<Atendente> buscarDisponiveis(Time time) {
+    public List<Atendente> buscarDisponiveisPorTime(Time time) {
         return listarPorTime(time).stream()
                 .filter(Atendente::isDisponivel)
                 .collect(Collectors.toList());

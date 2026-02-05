@@ -16,10 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-/**
- * Implementação em memória do serviço de atendimentos.
- * Gerencia o CRUD de atendimentos.
- */
 @Service
 @Profile("memory")
 @RequiredArgsConstructor
@@ -28,10 +24,8 @@ public class InMemoryAtendimentoService implements AtendimentoService {
 
     private final DistribuidorService distribuidorService;
 
-    // Map: ID -> Atendimento
     private final Map<Long, Atendimento> atendimentos = new ConcurrentHashMap<>();
 
-    // Gerador de IDs
     private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
@@ -40,16 +34,10 @@ public class InMemoryAtendimentoService implements AtendimentoService {
             throw new IllegalArgumentException("Atendimento não pode ser null");
         }
 
-        // Gera ID
         atendimento.setId(idGenerator.getAndIncrement());
-
-        // Define status inicial
         atendimento.setStatus(StatusAtendimento.AGUARDANDO_ATENDIMENTO);
-
-        // Define data de criação
         atendimento.setDataHoraCriacao(LocalDateTime.now());
 
-        // Salva
         atendimentos.put(atendimento.getId(), atendimento);
 
         log.info("Atendimento criado: ID={}, Cliente={}, Assunto={}, Time={}",
@@ -58,7 +46,6 @@ public class InMemoryAtendimentoService implements AtendimentoService {
                 atendimento.getAssunto(),
                 atendimento.getTime());
 
-        // Distribui automaticamente
         distribuidorService.distribuir(atendimento);
 
         return atendimento;

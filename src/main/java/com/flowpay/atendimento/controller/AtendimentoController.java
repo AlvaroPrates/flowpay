@@ -26,9 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Controller REST para gerenciamento de atendimentos.
- */
 @RestController
 @RequestMapping("/api/atendimentos")
 @RequiredArgsConstructor
@@ -40,10 +37,6 @@ public class AtendimentoController {
     private final AtendimentoService atendimentoService;
     private final DistribuidorService distribuidorService;
 
-    /**
-     * POST /api/atendimentos
-     * Cria um novo atendimento e o distribui automaticamente.
-     */
     @Operation(
         summary = "Criar novo atendimento",
         description = "Cria um novo atendimento e o distribui automaticamente para um atendente disponível. " +
@@ -84,10 +77,6 @@ public class AtendimentoController {
                 .body(AtendimentoResponse.fromEntity(criado));
     }
 
-    /**
-     * GET /api/atendimentos
-     * Lista todos os atendimentos.
-     */
     @Operation(
         summary = "Listar todos os atendimentos",
         description = "Retorna uma lista com todos os atendimentos cadastrados no sistema"
@@ -108,10 +97,6 @@ public class AtendimentoController {
         return ResponseEntity.ok(atendimentos);
     }
 
-    /**
-     * GET /api/atendimentos/{id}
-     * Busca um atendimento por ID.
-     */
     @Operation(
         summary = "Buscar atendimento por ID",
         description = "Retorna os detalhes de um atendimento específico"
@@ -139,10 +124,6 @@ public class AtendimentoController {
         return ResponseEntity.ok(AtendimentoResponse.fromEntity(atendimento));
     }
 
-    /**
-     * GET /api/atendimentos/time/{time}
-     * Lista atendimentos de um time específico.
-     */
     @Operation(
         summary = "Listar atendimentos por time",
         description = "Retorna todos os atendimentos de um time específico"
@@ -159,10 +140,6 @@ public class AtendimentoController {
         return ResponseEntity.ok(atendimentos);
     }
 
-    /**
-     * GET /api/atendimentos/status/{status}
-     * Lista atendimentos por status.
-     */
     @Operation(
         summary = "Listar atendimentos por status",
         description = "Retorna todos os atendimentos com um status específico"
@@ -180,10 +157,6 @@ public class AtendimentoController {
         return ResponseEntity.ok(atendimentos);
     }
 
-    /**
-     * PATCH /api/atendimentos/{id}/finalizar
-     * Finaliza um atendimento.
-     */
     @Operation(
         summary = "Finalizar atendimento",
         description = "Marca um atendimento como finalizado e libera o atendente. " +
@@ -206,7 +179,6 @@ public class AtendimentoController {
             @PathVariable Long id) {
         log.info("Recebida requisição para finalizar atendimento: id={}", id);
 
-        // Verifica se existe
         atendimentoService.buscarPorId(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Atendimento não encontrado: " + id));

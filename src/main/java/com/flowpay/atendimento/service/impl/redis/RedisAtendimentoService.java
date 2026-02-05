@@ -15,14 +15,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Implementação Redis do serviço de atendimentos.
- *
- * Estrutura Redis:
- * - Key: "atendimento:{id}" → Objeto Atendimento (JSON)
- * - Key: "atendimentos:ids" → Set com todos os IDs
- * - Key: "atendimento:id:counter" → Contador auto-incremento
- */
 @Service
 @Profile("redis")
 @RequiredArgsConstructor

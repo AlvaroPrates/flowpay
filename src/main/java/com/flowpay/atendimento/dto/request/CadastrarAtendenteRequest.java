@@ -9,9 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO para cadastro de novo atendente.
- */
 @Data
 @Builder
 @NoArgsConstructor

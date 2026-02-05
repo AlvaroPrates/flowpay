@@ -24,9 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Controller REST para gerenciamento de atendentes.
- */
 @RestController
 @RequestMapping("/api/atendentes")
 @RequiredArgsConstructor
@@ -37,10 +34,6 @@ public class AtendenteController {
 
     private final AtendenteService atendenteService;
 
-    /**
-     * POST /api/atendentes
-     * Cadastra um novo atendente.
-     */
     @Operation(
         summary = "Cadastrar novo atendente",
         description = "Cadastra um novo atendente no sistema e o associa a um time específico"
@@ -79,10 +72,6 @@ public class AtendenteController {
                 .body(AtendenteResponse.fromEntity(cadastrado));
     }
 
-    /**
-     * GET /api/atendentes
-     * Lista todos os atendentes.
-     */
     @Operation(
         summary = "Listar todos os atendentes",
         description = "Retorna uma lista com todos os atendentes cadastrados"
@@ -97,10 +86,6 @@ public class AtendenteController {
         return ResponseEntity.ok(atendentes);
     }
 
-    /**
-     * GET /api/atendentes/{id}
-     * Busca um atendente por ID.
-     */
     @Operation(
         summary = "Buscar atendente por ID",
         description = "Retorna os detalhes de um atendente específico"
@@ -127,10 +112,6 @@ public class AtendenteController {
         return ResponseEntity.ok(AtendenteResponse.fromEntity(atendente));
     }
 
-    /**
-     * GET /api/atendentes/time/{time}
-     * Lista atendentes de um time específico.
-     */
     @Operation(
         summary = "Listar atendentes por time",
         description = "Retorna todos os atendentes de um time específico"
@@ -147,10 +128,6 @@ public class AtendenteController {
         return ResponseEntity.ok(atendentes);
     }
 
-    /**
-     * GET /api/atendentes/time/{time}/disponiveis
-     * Lista apenas atendentes disponíveis de um time.
-     */
     @Operation(
         summary = "Listar atendentes disponíveis",
         description = "Retorna apenas os atendentes disponíveis (com menos de 3 atendimentos ativos) de um time"
@@ -159,7 +136,7 @@ public class AtendenteController {
     public ResponseEntity<List<AtendenteResponse>> listarDisponiveis(
             @Parameter(description = "Time", example = "CARTOES")
             @PathVariable Time time) {
-        List<AtendenteResponse> disponiveis = atendenteService.buscarDisponiveis(time)
+        List<AtendenteResponse> disponiveis = atendenteService.buscarDisponiveisPorTime(time)
                 .stream()
                 .map(AtendenteResponse::fromEntity)
                 .collect(Collectors.toList());

@@ -61,7 +61,7 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         log.info("═══════════════════════════════════════");
 
         // Busca atendentes disponíveis do time
-        List<Atendente> disponiveis = atendenteService.buscarDisponiveis(atendimento.getTime());
+        List<Atendente> disponiveis = atendenteService.buscarDisponiveisPorTime(atendimento.getTime());
 
         if (disponiveis.isEmpty()) {
             // Nenhum atendente disponível -> enfileira
@@ -106,7 +106,7 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         // Libera o atendente
         atendenteService.buscarPorId(atendimento.getAtendenteId())
                 .ifPresent(atendente -> {
-                    atendente.decrementarAtendimentos();
+                    atendente.decrementarAtendimento();
 
                     // Persiste mudança no Redis (se ativo)
                     persistirAtendenteSeRedis(atendente);
@@ -140,8 +140,7 @@ public class DistribuidorServiceImpl implements DistribuidorService {
 
         log.info("🔄 Processando fila do time {} (Tamanho: {})", time, tamanhoInicial);
 
-        // Enquanto houver atendentes disponíveis E fila não vazia
-        List<Atendente> disponiveis = atendenteService.buscarDisponiveis(time);
+        List<Atendente> disponiveis = atendenteService.buscarDisponiveisPorTime(time);
         int processados = 0;
 
         while (!disponiveis.isEmpty() && filaService.tamanhoFila(time) > 0) {
@@ -158,7 +157,7 @@ public class DistribuidorServiceImpl implements DistribuidorService {
             processados++;
 
             // Atualiza lista de disponíveis
-            disponiveis = atendenteService.buscarDisponiveis(time);
+            disponiveis = atendenteService.buscarDisponiveisPorTime(time);
         }
 
         int restante = filaService.tamanhoFila(time);
@@ -183,7 +182,7 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         atendimento.setDataHoraAtendimento(LocalDateTime.now());
 
         // Incrementa contador do atendente
-        atendente.incrementarAtendimentos();
+        atendente.incrementarAtendimento();
 
         // Persiste mudança no Redis (se ativo)
         persistirAtendenteSeRedis(atendente);

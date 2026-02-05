@@ -13,16 +13,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Handler global para tratamento centralizado de exceções.
- */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    /**
-     * Trata erros de validação (Bean Validation).
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex,
@@ -48,9 +42,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Trata recurso não encontrado.
-     */
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<ErrorResponse> handleRecursoNaoEncontrado(
             RecursoNaoEncontradoException ex,
@@ -69,9 +60,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    /**
-     * Trata exceções de negócio gerais.
-     */
     @ExceptionHandler(AtendimentoException.class)
     public ResponseEntity<ErrorResponse> handleAtendimentoException(
             AtendimentoException ex,
@@ -90,9 +78,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Trata exceções não previstas.
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,

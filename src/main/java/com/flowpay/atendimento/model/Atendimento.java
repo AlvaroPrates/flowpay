@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 public class Atendimento {
 
     private Long id;
-    private Long atendenteId;
     private Time time;
+    private Long atendenteId;
     private String assunto;
     private String nomeCliente;
     private StatusAtendimento status;

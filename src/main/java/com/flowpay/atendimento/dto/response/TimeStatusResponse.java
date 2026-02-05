@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * DTO com status completo de um time.
- */
 @Data
 @Builder
 @NoArgsConstructor

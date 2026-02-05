@@ -18,10 +18,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Implementação do serviço de notificações via WebSocket.
- * Envia mensagens em tempo real para clientes conectados.
- */
 @Service
 @Slf4j
 public class NotificacaoServiceImpl implements NotificacaoService {
@@ -31,9 +27,6 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     private final AtendimentoService atendimentoService;
     private final FilaService filaService;
 
-    /**
-     * Construtor com @Lazy em AtendimentoService para quebrar dependência circular.
-     */
     public NotificacaoServiceImpl(
             SimpMessagingTemplate messagingTemplate,
             AtendenteService atendenteService,
@@ -52,15 +45,14 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 atendimento.getNomeCliente(),
                 atendimento.getAtendenteId());
 
-        // Busca nome do atendente
         String nomeAtendente = null;
+
         if (atendimento.getAtendenteId() != null) {
             nomeAtendente = atendenteService.buscarPorId(atendimento.getAtendenteId())
                     .map(Atendente::getNome)
                     .orElse("Desconhecido");
         }
 
-        // Monta dados do atendimento
         NovoAtendimentoMessage dados = NovoAtendimentoMessage.builder()
                 .atendimentoId(atendimento.getId())
                 .nomeCliente(atendimento.getNomeCliente())
@@ -70,7 +62,6 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .nomeAtendente(nomeAtendente)
                 .build();
 
-        // Monta mensagem WebSocket
         WebSocketMessage mensagem = WebSocketMessage.builder()
                 .tipo(WebSocketMessage.TipoMensagem.NOVO_ATENDIMENTO)
                 .timestamp(LocalDateTime.now())
@@ -78,10 +69,8 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .mensagem("Novo atendimento em andamento")
                 .build();
 
-        // Envia para todos os clientes inscritos em /topic/atendimentos
         messagingTemplate.convertAndSend("/topic/atendimentos", mensagem);
 
-        // Também notifica métricas atualizadas
         notificarMetricasAtualizadas();
     }
 
@@ -89,20 +78,17 @@ public class NotificacaoServiceImpl implements NotificacaoService {
     public void notificarAtualizacaoFila(Time time) {
         log.info("[NOTIFICAÇÃO WS] Fila atualizada: Time={}", time);
 
-        // Conta atendimentos ativos deste time
         int ativos = (int) atendimentoService.listarPorTime(time)
                 .stream()
                 .filter(a -> a.getStatus() == StatusAtendimento.EM_ATENDIMENTO)
                 .count();
 
-        // Monta dados da fila
         FilaAtualizadaMessage dados = FilaAtualizadaMessage.builder()
                 .time(time)
                 .tamanhoFila(filaService.tamanhoFila(time))
                 .atendimentosAtivos(ativos)
                 .build();
 
-        // Monta mensagem WebSocket
         WebSocketMessage mensagem = WebSocketMessage.builder()
                 .tipo(WebSocketMessage.TipoMensagem.FILA_ATUALIZADA)
                 .timestamp(LocalDateTime.now())
@@ -110,13 +96,9 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .mensagem("Fila do time " + time + " foi atualizada")
                 .build();
 
-        // Envia para tópico específico do time
         messagingTemplate.convertAndSend("/topic/fila/" + time.name(), mensagem);
-
-        // Também envia para tópico geral
         messagingTemplate.convertAndSend("/topic/filas", mensagem);
 
-        // Atualiza métricas gerais
         notificarMetricasAtualizadas();
     }
 
@@ -126,7 +108,6 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 atendimento.getId(),
                 atendimento.getNomeCliente());
 
-        // Monta mensagem WebSocket
         WebSocketMessage mensagem = WebSocketMessage.builder()
                 .tipo(WebSocketMessage.TipoMensagem.ATENDIMENTO_FINALIZADO)
                 .timestamp(LocalDateTime.now())
@@ -134,18 +115,12 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .mensagem("Atendimento " + atendimento.getId() + " foi finalizado")
                 .build();
 
-        // Envia para todos os clientes
         messagingTemplate.convertAndSend("/topic/atendimentos", mensagem);
 
-        // Atualiza métricas
         notificarMetricasAtualizadas();
     }
 
-    /**
-     * Notifica que as métricas gerais do sistema foram atualizadas.
-     */
     private void notificarMetricasAtualizadas() {
-        // Calcula métricas atuais
         int totalAtivos = atendimentoService.listarPorStatus(StatusAtendimento.EM_ATENDIMENTO)
                 .size();
 
@@ -159,7 +134,6 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .filter(Atendente::isDisponivel)
                 .count();
 
-        // Monta dados
         MetricasAtualizadasMessage dados = MetricasAtualizadasMessage.builder()
                 .totalAtendimentosAtivos(totalAtivos)
                 .totalNaFila(totalFila)
@@ -167,7 +141,6 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .atendentesDisponiveis(disponiveis)
                 .build();
 
-        // Monta mensagem
         WebSocketMessage mensagem = WebSocketMessage.builder()
                 .tipo(WebSocketMessage.TipoMensagem.METRICAS_ATUALIZADAS)
                 .timestamp(LocalDateTime.now())
@@ -175,7 +148,6 @@ public class NotificacaoServiceImpl implements NotificacaoService {
                 .mensagem("Métricas do sistema atualizadas")
                 .build();
 
-        // Envia para tópico de métricas
         messagingTemplate.convertAndSend("/topic/metricas", mensagem);
 
         log.debug("[NOTIFICAÇÃO WS] Métricas atualizadas: ativos={}, fila={}, atendentes={}/{}",

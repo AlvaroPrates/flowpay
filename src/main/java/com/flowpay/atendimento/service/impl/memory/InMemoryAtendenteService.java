@@ -12,20 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-/**
- * Implementação em memória do serviço de atendentes.
- * Usa ConcurrentHashMap para armazenamento thread-safe.
- * Ativa apenas quando profile "memory" está ativo.
- */
 @Service
 @Profile("memory")
 @Slf4j
 public class InMemoryAtendenteService implements AtendenteService {
 
-    // Map: ID -> Atendente
     private final Map<Long, Atendente> atendentes = new ConcurrentHashMap<>();
 
-    // Gerador de IDs auto-incrementais
     private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
@@ -34,15 +27,13 @@ public class InMemoryAtendenteService implements AtendenteService {
             throw new IllegalArgumentException("Atendente não pode ser null");
         }
 
-        // Gera ID se não tiver
-        if (atendente.getId() == null) {
+        var atendenteId = atendente.getId();
+
+        if (atendenteId == null || atendenteId == 0) {
             atendente.setId(idGenerator.getAndIncrement());
         }
 
-        // Inicializa atendimentos ativos em 0 se não definido
-        if (atendente.getAtendimentosAtivos() == 0) {
-            atendente.setAtendimentosAtivos(0);
-        }
+        atendente.setAtendimentosAtivos(0);
 
         atendentes.put(atendente.getId(), atendente);
 
@@ -53,7 +44,7 @@ public class InMemoryAtendenteService implements AtendenteService {
     }
 
     @Override
-    public List<Atendente> buscarDisponiveis(Time time) {
+    public List<Atendente> buscarDisponiveisPorTime(Time time) {
         List<Atendente> disponiveis = atendentes.values().stream()
                 .filter(a -> a.getTime() == time)
                 .filter(Atendente::isDisponivel)

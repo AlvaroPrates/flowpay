@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Dados enviados quando um novo atendimento é criado/atribuído.
- */
 @Data
 @Builder
 @NoArgsConstructor

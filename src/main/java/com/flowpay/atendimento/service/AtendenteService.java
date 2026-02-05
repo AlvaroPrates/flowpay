@@ -10,7 +10,7 @@ public interface AtendenteService {
 
    Atendente cadastrar(Atendente atendente);
 
-   List<Atendente> buscarDisponiveis(Time time);
+   List<Atendente> buscarDisponiveisPorTime(Time time);
 
    Optional<Atendente> buscarPorId(Long id);
 

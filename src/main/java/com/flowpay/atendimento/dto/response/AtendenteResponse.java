@@ -7,9 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO de resposta com dados do atendente.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,9 +20,6 @@ public class AtendenteResponse {
     private int capacidadeMaxima;
     private boolean disponivel;
 
-    /**
-     * Converte uma entidade Atendente para DTO.
-     */
     public static AtendenteResponse fromEntity(Atendente atendente) {
         return AtendenteResponse.builder()
                 .id(atendente.getId())

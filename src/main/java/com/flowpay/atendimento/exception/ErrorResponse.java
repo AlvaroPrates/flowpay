@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Estrutura padronizada de resposta de erro.
- */
 @Data
 @Builder
 @NoArgsConstructor

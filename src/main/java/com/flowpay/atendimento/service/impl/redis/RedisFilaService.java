@@ -12,14 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implementação Redis do serviço de filas.
- *
- * Estrutura Redis:
- * - Key: "fila:CARTOES" → Redis List (FIFO)
- * - RPUSH adiciona no final (enfileirar)
- * - LPOP remove do início (desenfileirar)
- */
 @Service
 @Profile("redis")
 @RequiredArgsConstructor

@@ -22,17 +22,13 @@ public class Atendente {
         return atendimentosAtivos < MAX_ATENDIMENTOS;
     }
 
-    public boolean podeAtender() {
-        return isDisponivel();
-    }
-
-    public void incrementarAtendimentos() {
+    public void incrementarAtendimento() {
         if (atendimentosAtivos < MAX_ATENDIMENTOS) {
             atendimentosAtivos++;
         }
     }
 
-    public void decrementarAtendimentos() {
+    public void decrementarAtendimento() {
         if (atendimentosAtivos > 0) {
             atendimentosAtivos--;
         }

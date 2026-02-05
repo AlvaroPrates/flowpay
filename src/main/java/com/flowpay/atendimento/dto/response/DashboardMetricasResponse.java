@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
-/**
- * DTO com métricas gerais do dashboard.
- */
 @Data
 @Builder
 @NoArgsConstructor

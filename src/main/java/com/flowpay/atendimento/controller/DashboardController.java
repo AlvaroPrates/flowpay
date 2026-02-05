@@ -20,9 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controller REST para métricas e dados do dashboard.
- */
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -35,10 +32,6 @@ public class DashboardController {
     private final AtendenteService atendenteService;
     private final FilaService filaService;
 
-    /**
-     * GET /api/dashboard/metricas
-     * Retorna métricas gerais do sistema.
-     */
     @Operation(
         summary = "Obter métricas gerais",
         description = "Retorna métricas consolidadas do sistema: total de atendimentos ativos, " +
@@ -47,23 +40,19 @@ public class DashboardController {
     @GetMapping("/metricas")
     public ResponseEntity<DashboardMetricasResponse> obterMetricas() {
 
-        // Conta atendimentos ativos
         int totalAtivos = atendimentoService.listarPorStatus(StatusAtendimento.EM_ATENDIMENTO)
                 .size();
 
-        // Conta total na fila (soma de todos os times)
         int totalFila = Arrays.stream(Time.values())
                 .mapToInt(filaService::tamanhoFila)
                 .sum();
 
-        // Conta atendentes
         List<com.flowpay.atendimento.model.Atendente> todosAtendentes = atendenteService.listarTodos();
         int totalAtendentes = todosAtendentes.size();
         int atendentesDisponiveis = (int) todosAtendentes.stream()
                 .filter(com.flowpay.atendimento.model.Atendente::isDisponivel)
                 .count();
 
-        // Monta maps por time
         Map<Time, Integer> filasPorTime = new HashMap<>();
         Map<Time, Integer> ativosPorTime = new HashMap<>();
 
@@ -89,10 +78,6 @@ public class DashboardController {
         return ResponseEntity.ok(metricas);
     }
 
-    /**
-     * GET /api/dashboard/time/{time}
-     * Retorna status completo de um time específico.
-     */
     @Operation(
         summary = "Obter status de um time",
         description = "Retorna informações detalhadas sobre um time específico: " +
@@ -103,19 +88,16 @@ public class DashboardController {
             @Parameter(description = "Time", example = "CARTOES")
             @PathVariable Time time) {
 
-        // Atendentes do time
         List<AtendenteResponse> atendentes = atendenteService.listarPorTime(time)
                 .stream()
                 .map(AtendenteResponse::fromEntity)
                 .collect(Collectors.toList());
 
-        // Fila do time
         List<AtendimentoResponse> fila = filaService.listarFila(time)
                 .stream()
                 .map(AtendimentoResponse::fromEntity)
                 .collect(Collectors.toList());
 
-        // Atendimentos ativos
         int ativos = (int) atendimentoService.listarPorTime(time)
                 .stream()
                 .filter(a -> a.getStatus() == StatusAtendimento.EM_ATENDIMENTO)

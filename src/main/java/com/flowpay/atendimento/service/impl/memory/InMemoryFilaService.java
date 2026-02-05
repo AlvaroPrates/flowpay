@@ -11,21 +11,14 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-/**
- * Implementação em memória do serviço de filas.
- * Usa ConcurrentHashMap + ConcurrentLinkedQueue para thread-safety.
- * Ativa apenas quando profile "memory" está ativo.
- */
 @Service
 @Profile("memory")
 @Slf4j
 public class InMemoryFilaService implements FilaService {
 
-    // Map: Time -> Fila de atendimentos
     private final Map<Time, Queue<Atendimento>> filas = new ConcurrentHashMap<>();
 
     public InMemoryFilaService() {
-        // Inicializa uma fila para cada time
         Arrays.stream(Time.values())
                 .forEach(time -> filas.put(time, new ConcurrentLinkedQueue<>()));
 

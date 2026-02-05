@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Dados enviados quando uma fila é atualizada.
- */
 @Data
 @Builder
 @NoArgsConstructor

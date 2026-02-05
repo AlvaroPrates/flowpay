@@ -10,9 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * DTO de resposta com dados do atendimento.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -30,9 +27,6 @@ public class AtendimentoResponse {
     private LocalDateTime dataHoraAtendimento;
     private LocalDateTime dataHoraFinalizacao;
 
-    /**
-     * Converte uma entidade Atendimento para DTO.
-     */
     public static AtendimentoResponse fromEntity(Atendimento atendimento) {
         return AtendimentoResponse.builder()
                 .id(atendimento.getId())
