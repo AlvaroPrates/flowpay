@@ -10,6 +10,8 @@ import com.flowpay.atendimento.service.FilaService;
 import com.flowpay.atendimento.service.NotificacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,6 +37,10 @@ public class DistribuidorServiceImpl implements DistribuidorService {
     private final FilaService filaService;
     private final AtendenteService atendenteService;
     private final NotificacaoService notificacaoService;
+
+    // RedisTemplate opcional - só existe quando profile redis está ativo
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
 
     // Armazena atendimentos ativos (em andamento)
     // Map: ID do atendimento -> Atendimento
@@ -101,6 +107,10 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         atendenteService.buscarPorId(atendimento.getAtendenteId())
                 .ifPresent(atendente -> {
                     atendente.decrementarAtendimentos();
+
+                    // Persiste mudança no Redis (se ativo)
+                    persistirAtendenteSeRedis(atendente);
+
                     log.info("   Atendente {} liberado. Atendimentos ativos: {}/3",
                             atendente.getNome(), atendente.getAtendimentosAtivos());
                 });
@@ -175,6 +185,9 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         // Incrementa contador do atendente
         atendente.incrementarAtendimentos();
 
+        // Persiste mudança no Redis (se ativo)
+        persistirAtendenteSeRedis(atendente);
+
         // Armazena em memória como ativo
         atendimentosAtivos.put(atendimento.getId(), atendimento);
 
@@ -203,5 +216,20 @@ public class DistribuidorServiceImpl implements DistribuidorService {
         return atendimentosAtivos.values().stream()
                 .filter(a -> a.getTime() == time)
                 .toList();
+    }
+
+    /**
+     * Persiste mudanças do atendente no Redis (se profile redis ativo).
+     * Quando usando Redis, as mudanças no objeto Atendente em memória
+     * precisam ser sincronizadas com o Redis.
+     */
+    private void persistirAtendenteSeRedis(Atendente atendente) {
+        if (redisTemplate != null) {
+            String key = "atendente:" + atendente.getId();
+            redisTemplate.opsForHash().put(key, "atendimentosAtivos",
+                    atendente.getAtendimentosAtivos());
+            log.debug("Atendente {} atualizado no Redis: {}/3 atendimentos",
+                    atendente.getId(), atendente.getAtendimentosAtivos());
+        }
     }
 }
